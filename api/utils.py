@@ -1,8 +1,17 @@
 import heapq
 from .models import Edges
+from django.core.cache import cache
+from django.conf import settings
 
 
 def build_graph():
+    cache_key = f"build_graph"
+
+    cached_result = cache.get(cache_key)
+
+    if cached_result is not None:
+        return cached_result
+
     graph = {}
 
     edges = Edges.objects.select_related("source", "destination").all()
@@ -16,10 +25,19 @@ def build_graph():
 
         graph[source].append((destination, edge.latency))
 
+    cache.set(cache_key, graph, timeout=settings.CACHE_TTL)
+
     return graph
 
 
 def find_shortest_path(source, destination):
+    cache_key = f"shortest_path:{source}:{destination}"
+
+    cached_result = cache.get(cache_key)
+
+    if cached_result is not None:
+        return cached_result
+
     graph = build_graph()
 
     distances = {source: 0}
@@ -65,7 +83,11 @@ def find_shortest_path(source, destination):
 
     path.reverse()
 
-    return {
+    result = {
         "total_latency": distances[destination],
         "path": path,
     }
+
+    cache.set(cache_key, result, timeout=settings.CACHE_TTL)
+
+    return result
