@@ -86,13 +86,6 @@ class RouteHistoryCreateSerializer(serializers.ModelSerializer):
         except Nodes.DoesNotExist:
             raise ValidationError("Destination Node doesnot exist")
 
-        short_path = find_shortest_path(source, destination)
-
-        if short_path is None:
-            raise ValidationError(
-                {"error": f"No path exists between {source} and {destination}"},
-            )
-
         history_obj = RouteHistory.objects.filter(
             source=source, destination=destination
         ).first()
@@ -104,6 +97,13 @@ class RouteHistoryCreateSerializer(serializers.ModelSerializer):
                         "Use GET /routes/history with source and destination filters."
                     )
                 }
+            )
+
+        short_path = find_shortest_path(source, destination)
+
+        if short_path is None:
+            raise ValidationError(
+                {"error": f"No path exists between {source} and {destination}"},
             )
         history_obj = RouteHistory.objects.create(
             source=source,
