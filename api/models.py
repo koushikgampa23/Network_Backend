@@ -25,8 +25,12 @@ class Edges(models.Model):
 
 
 class RouteHistory(models.Model):
-    source = models.CharField()
-    destination = models.CharField()
+    source = models.ForeignKey(
+        Nodes, on_delete=models.CASCADE, related_name="history_sources"
+    )
+    destination = models.ForeignKey(
+        Nodes, on_delete=models.CASCADE, related_name="history_destinations"
+    )
     total_latency = models.FloatField()
     path = models.JSONField()
     created_at = models.DateTimeField(auto_now=True)

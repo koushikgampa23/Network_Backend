@@ -62,6 +62,9 @@ class EdgeGetSerializer(serializers.ModelSerializer):
 
 
 class RouteHistoryCreateSerializer(serializers.ModelSerializer):
+    source = serializers.CharField()
+    destination = serializers.CharField()
+
     class Meta:
         model = RouteHistory
         fields = "__all__"
@@ -77,17 +80,26 @@ class RouteHistoryCreateSerializer(serializers.ModelSerializer):
         destination = validated_data.get("destination")
 
         try:
-            Nodes.objects.get(name=source)
+            source_instance = Nodes.objects.get(name=source)
         except Nodes.DoesNotExist:
             raise ValidationError("Source Node doesnot exist")
 
         try:
-            Nodes.objects.get(name=destination)
+            destination_instance = Nodes.objects.get(name=destination)
         except Nodes.DoesNotExist:
             raise ValidationError("Destination Node doesnot exist")
 
+        short_path = find_shortest_path(source_instance.name, destination_instance.name)
+        if short_path is None:
+            raise ValidationError(
+                {
+                    "error": f"No path exists between {source_instance.name} and {destination_instance.name}"
+                },
+            )
         history_obj = RouteHistory.objects.filter(
-            source=source, destination=destination
+            source=source_instance,
+            destination=destination_instance,
+            path=short_path.get("path"),
         ).first()
         if history_obj:
             raise ValidationError(
@@ -98,16 +110,9 @@ class RouteHistoryCreateSerializer(serializers.ModelSerializer):
                     )
                 }
             )
-
-        short_path = find_shortest_path(source, destination)
-
-        if short_path is None:
-            raise ValidationError(
-                {"error": f"No path exists between {source} and {destination}"},
-            )
         history_obj = RouteHistory.objects.create(
-            source=source,
-            destination=destination,
+            source=source_instance,
+            destination=destination_instance,
             total_latency=short_path.get("total_latency"),
             path=short_path.get("path"),
         )
@@ -116,6 +121,9 @@ class RouteHistoryCreateSerializer(serializers.ModelSerializer):
 
 
 class RouteHistoryListSerializer(serializers.ModelSerializer):
+    source = serializers.CharField()
+    destination = serializers.CharField()
+
     class Meta:
         model = RouteHistory
         fields = "__all__"

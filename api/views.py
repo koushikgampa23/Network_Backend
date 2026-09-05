@@ -54,8 +54,8 @@ class RouteHistoryListAPIView(ListAPIView):
     serializer_class = RouteHistoryListSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = [
-        "source",
-        "destination",
+        "source__name",
+        "destination__name",
     ]
     search_fields = ["created_at"]
     pagination_class = PageNumberPagination
