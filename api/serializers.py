@@ -89,10 +89,22 @@ class RouteHistoryCreateSerializer(serializers.ModelSerializer):
         short_path = find_shortest_path(source, destination)
 
         if short_path is None:
-            return ValidationError(
+            raise ValidationError(
                 {"error": f"No path exists between {source} and {destination}"},
             )
 
+        history_obj = RouteHistory.objects.filter(
+            source=source, destination=destination
+        ).first()
+        if history_obj:
+            raise ValidationError(
+                {
+                    "error": (
+                        "Route history already exists. "
+                        "Use GET /routes/history with source and destination filters."
+                    )
+                }
+            )
         history_obj = RouteHistory.objects.create(
             source=source,
             destination=destination,

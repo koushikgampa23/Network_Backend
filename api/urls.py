@@ -6,6 +6,7 @@ from .views import (
     EdgeDestroyAPIView,
     RouteHistoryCreateAPIView,
     RouteHistoryListAPIView,
+    RouteHistoryDestoryAPIView,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path("edges/<int:pk>/", EdgeDestroyAPIView.as_view()),
     path("routes/shortest/", RouteHistoryCreateAPIView.as_view()),
     path("routes/history/", RouteHistoryListAPIView.as_view()),
+    path("routes/history<int:pk>/", RouteHistoryDestoryAPIView.as_view()),
 ]

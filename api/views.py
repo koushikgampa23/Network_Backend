@@ -60,3 +60,8 @@ class RouteHistoryListAPIView(ListAPIView):
     search_fields = ["created_at"]
     pagination_class = PageNumberPagination
     pagination_class.page_size_query_param = "limit"
+
+
+class RouteHistoryDestoryAPIView(DestroyAPIView):
+    queryset = RouteHistory.objects.all()
+    serializer_class = RouteHistoryListSerializer
