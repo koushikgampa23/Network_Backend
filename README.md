@@ -1,61 +1,52 @@
-## To run this application
+# Network Backend
 
-### Create virtual environment and activate it
+## Project Setup
 
-    Windows machine:
-    virtualenv venv
+### 1. Create and activate a virtual environment
 
-    Activate the virtual env:
-    venv\Scripts\activate
+On Windows:
 
-### Install all the dependencies
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
 
-    poetry install
+### 2. Install dependencies
 
-### Run the application
+```powershell
+poetry install
+```
 
-    poetry run python manage.py runserver
+### 3. Enable Redis cache[optional]
 
-### To migrate the applicaiton
+Switch to the Redis cache branch:
 
-    poetry run python manage.py makemigrations
-    poetry run python manage.py migrate
+```powershell
+git checkout feature/redis-cache
+```
 
-### Tables
+Start Redis with Docker:
 
-    what we have
-    Post - /nodes, name: serverA; reponse: id:1, name
-    Post - /edges, source:serverA, destination: serverB, latency; reponse: id
-    Get - /routes/shortest/, source:serverA, destination: ServerD; reponse: "total_latency":23.4, path:["ServerA",serverB, serverD] or no path between nodes
+```powershell
+docker run --name django-redis -d -p 6380:6379 redis
+```
 
-    Get - /route/history - filter by source, destination, limit(number of records), date_from/date_to(timestamp)
-    Response:
-        "id": 1,
-        "source": "ServerA",
-        "destination": "ServerD",
-        "total_latency": 23.4,
-        "path": ["ServerA", "ServerB", "ServerD"],
-        "created_at": "2026-02-20T14:32:00Z"
+### 4. Apply database migrations
 
-    Plan of action:
-    In the models.py create 2 tables
-        Nodes: id, name: serverA, created_at, modified_at
-        Edges: id, source:Foreignkey of node, destination:Foreignkey of node, latency, created_at, modified_at
+```powershell
+poetry run python manage.py migrate
+```
 
+### 5. Start the application
 
-    Next we create app name as api and create endpoints /nodes, edges, /routes/shortest/
+```powershell
+poetry run python manage.py runserver
+```
 
-    optional;
-    Get /nodes, Delete/nodes/{id}/
-    Get /edges, Delete /edges/id/
+The application runs at `http://127.0.0.1:8000/`.
 
-    History api needs this
-        /routes/history
-         {
-            "id": 1,
-            "source": "ServerA",
-            "destination": "ServerD",
-            "total_latency": 23.4,
-            "path": ["ServerA", "ServerB", "ServerD"],
-            "created_at": "2026-02-20T14:32:00Z"
-        },
+### 6. Open Swagger UI
+
+Swagger UI is available at:
+
+`http://127.0.0.1:8000/api/docs/`
